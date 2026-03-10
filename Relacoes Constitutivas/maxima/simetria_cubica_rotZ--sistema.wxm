@@ -1,0 +1,146 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
+/* [wxMaxima: input   start ] */
+kill(all)$
+ratprint: false$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("./rotina_rotacao.mac")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+SIMETRIA DUBIDA
+
+Vamos partir de uma matriz obtida para o material ortotropico e, entao, vamos estudar a forma necessaria para uma
+invariancia TAMBEM em relacao a reflexao em planos bissetores
+
+Vamos definir o operador de reflexao em um plano bissetor do XY (M com normal em X e rotacionado em Z em 45 graus)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+theta: %pi/4$
+Rz: matrix( [cos(theta),  sin(theta), 0 ],
+           [-sin(theta), cos(theta), 0 ],
+           [      0 ,        0,      1 ]) $
+Mx: matrix( [-1,  0,   0 ],
+           [  0,  1,   0 ],
+           [  0 , 0,   1 ])$
+Mbxy: Rz.Mx.transpose(Rz);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+e um operador de reflexao em um plano YZ  (M com normal em Y e rotacionado em torno de X em 45 graus)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Rx: matrix( [1 , 0, 0 ] , 
+            [0,  cos(theta),  sin(theta) ],
+            [0, -sin(theta), cos(theta)] ) $
+My: matrix( [ 1,  0,   0 ],
+           [  0,  -1,   0 ],
+           [  0 , 0,   1 ])$
+Mbyz: Rx.My.transpose(Rx);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+A reflexao cmposta eh dada por
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M: Mbyz.Mbxy;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E a relacao consitutiva deve ser informada na forma compacta (6x6). Aqui os termos sao
+definidos na ordem xx, yy, zz, xz, yz e xy.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D       : matrix ([Dxxxx, Dxxyy, Dxxzz,   0 ,    0      ,  0  ],
+                  [Dxxyy, Dyyyy, Dyyzz,   0 ,    0      ,  0  ],
+                  [Dxxzz, Dyyzz, Dzzzz,   0 ,    0      ,  0  ],
+                  [  0  ,   0  ,   0  , Dxzxz,   0      ,  0  ],
+                  [  0  ,   0  ,   0  ,   0  ,  Dyzyz   ,  0  ],
+                  [  0  ,   0  ,   0  ,   0  ,   0      , Dxyxy] )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i from 1 thru 6 do
+   for j from 1 thru 6  do 
+         assume(D[1,1]>=0);
+for i from 1 thru 6 do
+   assume(D[i,i]>0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Forma do D para esta mudanca de base
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DM: muda_bases(D, M) ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq11: D[1,1] = DM[1,1] $ eq12: D[1,2] = DM[1,2] $ eq13: D[1,3] = DM[1,3] $ eq14: D[1,4] = DM[1,4] $ eq15: D[1,5] = DM[1,5] $ eq16: D[1,6] = DM[1,6] $ 
+                         eq22: D[2,2] = DM[2,2] $ eq23: D[2,3] = DM[2,3] $ eq24: D[2,4] = DM[2,4] $ eq25: D[2,5] = DM[2,5] $ eq26: D[2,6] = DM[2,6] $
+                                                  eq33: D[3,3] = DM[3,3] $ eq34: D[3,4] = DM[3,4] $ eq35: D[3,5] = DM[3,5] $ eq36: D[3,6] = DM[3,6] $
+                                                                           eq44: D[4,4] = DM[4,4] $ eq45: D[4,5] = DM[4,5] $ eq46: D[4,6] = DM[4,6] $ 
+                                                                                                    eq55: D[5,5] = DM[5,5] $ eq56: D[5,6] = DM[5,6] $ 
+                                                                                                                             eq66: D[6,6] = DM[6,6] $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+backsubst : true$
+result: solve([eq11,eq12,eq13,eq22,eq23,eq33,eq44,eq55,eq66],
+                 [Dxxxx,Dxxyy, Dxxzz,  Dyyyy, Dyyzz, Dzzzz,  Dxzxz,   Dyzyz,  Dxyxy ] );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Observem que a resposta eh meio estranha mas bem interessante:
+
+Dxxxx = Dyyyy = Dzzzz
+Dxxyy = Dxxzz = Dyyzz
+Dxzxz = Dyzyz = Dxyxy
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+forma_invariante: teste: ev(D,result);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos verificar se eh realmente invariante
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+trigsimp(muda_bases(forma_invariante,M));
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$

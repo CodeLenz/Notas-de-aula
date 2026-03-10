@@ -1,0 +1,97 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("./rotina_rotacao.mac")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ORTOTROPIDO 3D
+
+Vamos partir de uma matriz obtida por reflexao em um plano com normal em Z (plano XY),
+obtida na planilha monoclinico_xy e, entao, vamos estudar a forma necessaria para uma
+invariancia TAMBEM no plano com normal em y (XZ)
+
+Vamos definir o operador de reflexao com normal em Z
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M: matrix( [1,  0, 0 ],
+           [0, -1, 0 ],
+           [0 , 0, 1 ]) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E a relacao consitutiva deve ser informada na forma compacta (6x6). Aqui os termos sao
+definidos na ordem xx, yy, zz, xz, yz e xy.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D       : matrix ([Dxxxx, Dxxyy, Dxxzz,   0 ,   0   , Dxxxy],
+                  [Dxxyy, Dyyyy, Dyyzz,   0 ,   0   , Dyyxy],
+                  [Dxxzz, Dyyzz, Dzzzz,   0 ,   0   , Dzzxy],
+                  [  0  ,   0  ,   0  , Dxzxz, Dxzyz,   0  ],
+                  [  0  ,   0  ,   0  , Dxzyz, Dyzyz,   0  ],
+                  [Dxxxy, Dyyxy, Dzzxy,   0  ,   0  , Dxyxy] )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Forma do D para esta mudanca de base
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DM: muda_bases(D, M);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Sistema de equacoes para definir a forma do tensor final
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq11: D[1,1] = DM[1,1] $ eq12: D[1,2] = DM[1,2] $ eq13: D[1,3] = DM[1,3] $ eq14: D[1,4] = DM[1,4] $ eq15: D[1,5] = DM[1,5] $ eq16: D[1,6] = DM[1,6] $ 
+                         eq22: D[2,2] = DM[2,2] $ eq23: D[2,3] = DM[2,3] $ eq24: D[2,4] = DM[2,4] $ eq25: D[2,5] = DM[2,5] $ eq26: D[2,6] = DM[2,6] $
+                                                  eq33: D[3,3] = DM[3,3] $ eq34: D[3,4] = DM[3,4] $ eq35: D[3,5] = DM[3,5] $ eq36: D[3,6] = DM[3,6] $
+                                                                           eq44: D[4,4] = DM[4,4] $ eq45: D[4,5] = DM[4,5] $ eq46: D[4,6] = DM[4,6] $ 
+                                                                                                    eq55: D[5,5] = DM[5,5] $ eq56: D[5,6] = DM[5,6] $ 
+                                                                                                                             eq66: D[6,6] = DM[6,6] $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+backsubst : false$
+result: linsolve([eq11,eq12,eq13,eq14,eq15,eq16,eq22,eq23,eq24,eq25,eq26,eq33,eq34,eq35,eq36,eq44,eq45,eq46,eq55,eq56,eq66],
+                 [Dxxxx,Dxxyy, Dxxzz, Dxxxz, Dxxyz, Dxxxy, Dyyyy, Dyyzz, Dyyxz, Dyyyz, Dyyxy,
+                  Dzzzz, Dzzxz, Dzzyz, Dzzxy, Dxzxz, Dxzyz, Dxzxy,  Dyzyz, Dyzxy , Dxyxy ] );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+forma_invariante: teste: ev(D,result);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos verificar se eh realmente invariante
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+muda_bases(forma_invariante,M);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$

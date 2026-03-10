@@ -1,0 +1,62 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("./rotina_rotacao.mac")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+A mudanca de base deve ser definida por uma matriz 3x3. Neste exemplo
+uma rotacao em torno do eixo Z, em 30 graus
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+angulo: float(%pi/6) $
+R: matrix( [cos(angulo), -sin(angulo), 0 ],
+           [sin(angulo), cos (angulo), 0 ],
+           [    0 ,           0,       1 ]  ) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E a relacao consitutiva deve ser informada na forma compacta (6x6). Aqui os termos sao
+definidos na ordem xx, yy, zz, xz, yz e xy.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+compacta: matrix ([Dxxxx, Dxxyy, Dxxzz, Dxxxz, Dxxyz, Dxxxy],
+                  [Dxxyy, Dyyyy, Dyyzz, Dyyxz, Dyyyz, Dyyxy],
+                  [Dxxzz, Dyyzz, Dzzzz, Dzzxz, Dzzyz, Dzzxy],
+                  [Dxxxz, Dyyxz, Dzzxz, Dxzxz, Dxzyz, Dxzxy],
+                  [Dxxyz, Dyyyz, Dzzyz, Dxzyz, Dyzyz, Dyzxy],
+                  [Dxxxy, Dyyxy, Dzzxy, Dxzxy, Dyzxy, Dxyxy] )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Finalmente chamamos a rotina de mudanca de base, que converte para a forma tensorial 3x3x3x3
+muda as bases e converte novamente para a forma compacta, que sera armazenada na nova matriz
+D.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D: muda_bases(compacta, R) ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+float(D[1,1]);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$

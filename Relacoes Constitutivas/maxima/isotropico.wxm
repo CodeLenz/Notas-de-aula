@@ -1,0 +1,360 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
+/* [wxMaxima: input   start ] */
+kill(all)$
+ratprint: false$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("./rotina_rotacao.mac")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ISOTROPIDO 
+
+Vamos partir de uma matriz obtida para o material transversalmente isotropico com relacao a rotacao em Z e,
+ entao, vamos estudar a forma necessaria para uma invariancia TAMBEM em relacao a uma rotacam em torno de Y
+
+Vamos definir o operador de rotacao em torno de Y (plano XZ)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+R: matrix( [    cos(theta),     0,    sin(theta) ],
+           [        0 ,         1,       0       ],
+           [   -sin(theta) ,    0,    cos(theta) ]) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E a relacao consitutiva deve ser informada na forma compacta (6x6). Aqui os termos sao
+definidos na ordem xx, yy, zz, xz, yz e xy.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D       : matrix ([Dxxxx, Dxxyy, Dxxzz,   0 ,    0      ,  0  ],
+                  [Dxxyy, Dxxxx, Dyyzz,   0 ,    0      ,  0  ],
+                  [Dxxzz, Dyyzz, Dzzzz,   0 ,    0      ,  0  ],
+                  [  0  ,   0  ,   0  , Dyzyz,   0      ,  0  ],
+                  [  0  ,   0  ,   0  ,   0  ,  Dyzyz   ,  0  ],
+                  [  0  ,   0  ,   0  ,   0  ,   0      , (1/2)*(Dxxxx-Dxxyy)] )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Forma do D para esta mudanca de base
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DM: muda_bases(D, R) ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos estudar as igualdades no tensor final, termo a termo. Domo temos isotropia no plano XZ, entao as propriedades em XZ devem ser iguais.
+Vamos impor esta condicao na primeira equacao (Dzzzz = Dxxxx) e ver o que da:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t1: ev (trigsimp( D[1,1]-DM[1,1] = 0),  [ Dzzzz=Dxxxx ] );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+aparentemente podemos zerar esta equacao se utilizarmos a relacao
+
+Dyzyz = ( Dxxxx - Dxxzz ) / 2
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+t2: ratsimp( ev (t1, Dyzyz = (1/2) * (Dxxxx - Dxxzz) ));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Meio magico, eu sei, mas faz sentido e satisfaz a primeira equacao. Vamos dar uma olhada nas proximas equacoes....sao so 21 :)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[1,2]-DM[1,2] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx]  )     ;
+ev (     trigsimp(D[1,3]-DM[1,3] = 0)       ,      [Dxyxy = (1/2) * (Dxxxx - Dxxyy) , Dyyyy=Dxxxx]  )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Opa....temos mais um resultado....Dxxyy = Dyyzz....vamos continuar com mais esta informacao..
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[1,4]-DM[1,4] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+ev (     trigsimp(D[1,5]-DM[1,5] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+ev (     trigsimp(D[1,6]-DM[1,6] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Perfeito...a primeira linha esta pronta. Vamos para a segunda
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[2,2]-DM[2,2] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+ev (     trigsimp(D[2,3]-DM[2,3] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+ev (     trigsimp(D[2,4]-DM[2,4] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+ev (     trigsimp(D[2,5]-DM[2,5] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+ev (     trigsimp(D[2,6]-DM[2,6] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Maravilha...terceira linha...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[3,3]-DM[3,3] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+ev (     trigsimp(D[3,4]-DM[3,4] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+ev (     trigsimp(D[3,5]-DM[3,5] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+ev (     trigsimp(D[3,6]-DM[3,6] = 0)       ,      [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Acho que nunca os alunos ficaram tao felizes vendo tanto zeros....Vamos para a quarta linha..
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[4,4]-DM[4,4] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+ev (     trigsimp(D[4,5]-DM[4,5] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+ev (     trigsimp(D[4,6]-DM[4,6] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+penultima linha....
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[5,5]-DM[5,5] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz] )     ;
+ev (     trigsimp(D[5,6]-DM[5,6] = 0)       ,       [Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz]  )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E obtemos mais uma relacao, Dyyzz = Dxxzz. E finalmente...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ev (     trigsimp(D[6,6]-DM[6,6] = 0)       ,      [  Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz=Dxxxx, Dxxyy = Dyyzz , Dyyzz = Dxxzz ]  )     ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+##
+## PRONTO !!!!!!!!!!!!!!!
+##
+##
+A forma final do tensor sera entao...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+forma_invariante: teste: ev(D,   [  Dyzyz = (1/2) * (Dxxxx - Dxxzz) , Dzzzz = Dxxxx, Dyyzz = Dxxzz  , Dxxyy = Dxxzz ]  );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos verificar se eh realmente invariante
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+trigsimp(muda_bases(forma_invariante,R));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E, na verdade, podemos verificar que esta forma eh invariante com qualquer transformacao. Vamos a alguns exemplos:
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Mx: matrix( [-1, 0, 0 ],
+            [0, 1, 0 ],
+            [0 ,0, 1 ]) $
+muda_bases(forma_invariante,Mx);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+My: matrix( [1, 0, 0 ],
+            [0, -1, 0 ],
+            [0 ,0, 1 ]) $
+muda_bases(forma_invariante,My);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Mz: matrix( [1, 0, 0 ],
+            [0, 1, 0 ],
+            [0 ,0, -1 ]) $
+muda_bases(forma_invariante,Mz);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M: Mx.My.Mz;
+muda_bases(forma_invariante,M);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Rx: matrix( [        1      ,  0       ,    0],
+            [        0,    cos(theta),       sin(theta)  ],
+            [       0  , -sin(theta) ,      cos(theta) ]) $
+trigsimp(muda_bases(forma_invariante,Rx));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Ry: matrix( [    cos(theta),     0,    sin(theta) ],
+           [        0 ,         1,       0       ],
+           [   -sin(theta) ,    0,    cos(theta) ]) $
+trigsimp(muda_bases(forma_invariante,Ry));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Rz: matrix(  [       cos(theta),       sin(theta) ,  0 ],
+            [        -sin(theta) ,     cos(theta) ,  0] ,
+            [        0 ,    0 ,  1]
+) $
+trigsimp(muda_bases(forma_invariante,Rz));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Tudo junto reunido......
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+T: Mx.My.Mz.Rx.Ry.Rz;
+trigsimp(muda_bases(forma_invariante,T));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Verificamos assim que um tensor de quarta ordem que tem a forma acima eh totalmente invariante
+Em MSO definimos os termos acima como 
+
+
+
+Dxxxx = E(1-v) / (1+v)(1-2v)
+Dxxzz = v*Dxxxx
+
+Assim, os termos relativos ao cisalhamento valem G = E / 2(1+v). Vamos verificar:
+
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+c:  E / (  (1+v)*(1-2*v));
+t1: c*(1-v);
+t2: c*v;
+G: ratsimp(t1-t2)/2;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Assim, o tensor fica, na forma "conhecida"
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+isotropico: ratsimp(ev (forma_invariante,[Dxxxx=t1, Dxxzz=t2]));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+por exemplo, colocando valores bonitinhos...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+material: ev(isotropico,[E: 2, v: 1/3]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+que obviamente eh totalmente invariante
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+material_T: (muda_bases(material,T))$
+diferenca: trigsimp(material_T - material);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+MAS DUIDADO DOM OS ERROS NUMERIDOS QUE PODEM SURGIR !!!!!!
+
+Domo o numero de operacoes aqui eh enorme, um ponto flutuante pode causar um grande erro no final.
+
+Vamos a um exemplo
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+aco: ev(isotropico,[E: 210E9, v: 0.3]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+aco_T: (muda_bases(aco,T))$
+diferenca: trigsimp(aco_T - aco);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+estes termos deveriam cancelar, mas devido a erros de arredondamento, permaneceram. Vamos dar uma olhada em um dos termos
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxplot2d( diferenca[2,1], [theta, 0, 2*%pi]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+ou seja, uma diferenca maxima de 0.35 (notem que estamos trabalhando na casa de E10). Graficando o erro%
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+erro: 100*( (aco[2,1] - aco_T[2,1])/aco[2,1] );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxplot2d(erro,[theta,0,2*%pi]);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$

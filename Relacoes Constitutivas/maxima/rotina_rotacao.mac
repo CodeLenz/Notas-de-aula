@@ -1,0 +1,80 @@
+muda_bases(compacta, R) := block(
+    [ c, CROT, i, j, k, l, m, n, o, p, ROTCOMP, I_map, J_map, A, B ],
+    
+    /* Para garantir que as variáveis sejam locais à função */
+    local(c, CROT),
+
+    /* -----------------------------------------------------------------
+       Definição do Mapeamento de Voigt
+       Índices: 1->11, 2->22, 3->33, 4->23, 5->13, 6->12
+       ----------------------------------------------------------------- */
+    I_map : [1, 2, 3, 2, 1, 1],
+    J_map : [1, 2, 3, 3, 3, 2],
+
+    /* -----------------------------------------------------------------
+       PASSO 1: Descompactação (Matriz 6x6 -> Tensor 3x3x3x3)
+       ----------------------------------------------------------------- */
+    for A from 1 thru 6 do (
+        for B from 1 thru 6 do (
+            /* Obtém os índices tensoriais i, j, k, l a partir do mapeamento */
+            i : I_map[A],
+            j : J_map[A],
+            k : I_map[B],
+            l : J_map[B],
+
+            /* Atribui o valor da matriz compacta aplicando as simetrias menores */
+            c[i,j,k,l] : compacta[A,B],
+            c[j,i,k,l] : compacta[A,B],
+            c[i,j,l,k] : compacta[A,B],
+            c[j,i,l,k] : compacta[A,B]
+        )
+    ),
+
+    /* -----------------------------------------------------------------
+       PASSO 2: Transformação Tensorial (Rotação de 4ª Ordem)
+       ----------------------------------------------------------------- */
+    for i from 1 thru 3 do (
+        for j from 1 thru 3 do (
+            for k from 1 thru 3 do (
+                for l from 1 thru 3 do (
+                    CROT[i,j,k,l] : 0.0,
+                    for m from 1 thru 3 do (
+                        for n from 1 thru 3 do (
+                            for o from 1 thru 3 do (
+                                for p from 1 thru 3 do (
+                                    CROT[i,j,k,l] : CROT[i,j,k,l] + 
+                                                    R[i,m] * R[j,n] * R[k,o] * R[l,p] * c[m,n,o,p]
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
+    ),
+
+    /* -----------------------------------------------------------------
+       PASSO 3: Recompactação (Tensor 3x3x3x3 -> Matriz 6x6)
+       ----------------------------------------------------------------- */
+    /* Cria uma matriz 6x6 preenchida com zeros */
+    ROTCOMP : zeromatrix(6, 6),
+    
+    for A from 1 thru 6 do (
+        for B from A thru 6 do (  /* Percorre apenas a porção triangular superior */
+            
+            i : I_map[A],
+            j : J_map[A],
+            k : I_map[B],
+            l : J_map[B],
+
+            /* Extrai o valor do tensor rotacionado */
+            ROTCOMP[A,B] : CROT[i,j,k,l],
+            
+            /* Impõe a simetria maior refletindo para a triangular inferior */
+            ROTCOMP[B,A] : ROTCOMP[A,B]
+        )
+    ),
+
+    /* Retorna a matriz final transformada */
+    ROTCOMP
+)$

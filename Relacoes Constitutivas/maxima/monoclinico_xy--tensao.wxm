@@ -1,0 +1,220 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
+/* [wxMaxima: input   start ] */
+kill(all)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+load("./rotina_rotacao.mac")$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos definir uma sub-rotina bem simples, que pega uma matriz (representacao de um tensor de segunda ordem
+e devolve a forma vetorial (representacao compacta). Vamos definir tambem a operacao inversa.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+compacta_eps(matriz):=(
+    vetor: [matriz[1,1], matriz[2,2], matriz[3,3], 2*matriz[1,3], 2*matriz[2,3], 2*matriz[1,2] ]
+)$
+
+compacta_s(matriz):=(
+    vetor: [matriz[1,1], matriz[2,2], matriz[3,3], matriz[1,3], matriz[2,3], matriz[1,2] ]
+)$
+
+cheia(vetor):=(
+    matriz: matrix( [vetor[1] , vetor[6], vetor[4]] ,
+                    [vetor[6] , vetor[2], vetor[5]],
+                    [vetor[4] , vetor[5], vetor[3] ]  )
+)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+MONODLINIDO NO PLANO XY
+
+Vamos definir o operador de reflexao com normal em Z
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M: matrix( [1, 0, 0 ],
+           [0, 1, 0 ],
+           [0 ,0,-1 ]) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E a relacao consitutiva deve ser informada na forma compacta (6x6). Aqui os termos sao
+definidos na ordem xx, yy, zz, xz, yz e xy.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D       : matrix ([Dxxxx, Dxxyy, Dxxzz, Dxxxz, Dxxyz, Dxxxy],
+                  [Dxxyy, Dyyyy, Dyyzz, Dyyxz, Dyyyz, Dyyxy],
+                  [Dxxzz, Dyyzz, Dzzzz, Dzzxz, Dzzyz, Dzzxy],
+                  [Dxxxz, Dyyxz, Dzzxz, Dxzxz, Dxzyz, Dxzxy],
+                  [Dxxyz, Dyyyz, Dzzyz, Dxzyz, Dyzyz, Dyzxy],
+                  [Dxxxy, Dyyxy, Dzzxy, Dxzxy, Dyzxy, Dxyxy] )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Domo sabemos que todos os termos desta matriz devem ser positivos e que os 
+termos da diagonal devem ser estritamente positivos, temos que 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i from 1 thru 6 do
+   for j from 1 thru 6  do 
+         assume(D[i,j]>=0);
+for i from 1 thru 6 do
+   assume(D[i,i]>0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Deformacao nao rotacionada
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eps:  matrix( [exx,exy,exz] , [exy,eyy,eyz] , [exz,eyz,ezz]  );
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Tensao nao rotacionada
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sigma: D.compacta_eps(eps);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Agora a magica...vamos definir uma deformacao na nova base
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eps2: M.eps.transpose(M) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+para obter as tensoes na nova base, vamos usar o material na forma
+sem rotacionar, para depois inspecionar. Vamos fazer o seguinte
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sigma1M: D.compacta_eps(eps2) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+mas sigma1M deve ser rotacionado tambem, portanto
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+sigma2: compacta_s(M.cheia(sigma1M).transpose(M));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E, se o material for invariante a esta mudanca de base,
+entao o resultado (TENSAO) nao deve mudar...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eqs = [0,0,0,0,0,0]$
+for i from 1 thru 6 do (
+     eqs[i]: sigma[i] = sigma2[i] ,
+     disp(eqs[i])
+)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Talvez seja mais simples na forma 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eqs = [0,0,0,0,0,0]$
+for i from 1 thru 6 do (
+     eqs[i]: ratsimp(sigma[i] - sigma2[i] = 0),
+     disp(eqs[i])
+)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Domo os coeficientes fora da diagonal devem ser >=0, concluimos diretamente que 
+
+
+Dxxyz = Dxxxz = 0
+Dyyyz = Dyyxz = 0
+Dzzyz = Dzzxz = 0
+
+ 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i from 1 thru 6 do (
+       eqs[i]: ev (eqs[i], [Dxxyz=0, Dxxxz=0, Dyyyz=0, Dyyxz=0, Dzzyz=0, Dzzxz=0]),
+       disp(eqs[i])
+)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E agora verificamos, tambem diretamente, que 
+
+ Dxzxy = 0  e Dyzxy = 0
+
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for i from 1 thru 6 do (
+       eqs[i]: ev (eqs[i], [Dxxyz=0,Dxxxz=0, Dyyyz=0, Dyyxz=0, Dzzyz=0, Dzzxz=0, Dxzxy=0, Dyzxy = 0]),
+       disp(eqs[i])
+)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Assim, verifica-se que a seguinte forma deve ser invariante a simetria de reflexao
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+DMXY: ev (D, [Dxxyz=0,Dxxxz=0, Dyyyz=0, Dyyxz=0, Dzzyz=0, Dzzxz=0, Dxzxy=0, Dyzxy = 0]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E podemos verificar que esta relacao eh invariante, pois 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+muda_bases(DMXY,M);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$
