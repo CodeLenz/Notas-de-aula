@@ -1,0 +1,227 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 23.05.1 ] */
+/* [wxMaxima: input   start ] */
+kill(all) $
+ratprint: false $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Introducao ao projeto com materiais compostos 
+12/05/2026
+Prof. Eduardo Lenz Cardoso - eduardo.cardoso@udesc.br
+Universidade do Estado de Santa Catarina - UDESC
+Centro de Ciencias Tecnologicas - CCT
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+Determinacao das matrizes de acoplamento em placas laminadas
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rotina para rotacao da deformacao. O tensor sera recebido na forma compacta, expandido e entao rotacinado.
+Para a saida, o tensor eh novamente colocado na forma compacta. Devemos ter um cuidado especial com o termo cisalhante da 
+deformacao
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ROT_EPS(T,teta):= (Block[T2, R, c, s, rad, defo],
+                 rad: teta*%pi/180,
+                 c: cos(rad),
+                 s: sin(rad),
+                 R: matrix( [c, s, 0], [-s, c, 0], [0, 0, 1] ),
+                 T2: matrix( [  T[1,1], T[3,1]/2,  0], [ T[3,1]/2, T[2,1], 0], [0, 0, 0] ), 
+                 defo: R.T2.transpose(R), 
+                 [defo[1,1], defo[2,2], 2*defo[1,2]] 
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rotina que define a rotacao da relacao constitutiva EPTs
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ROT_EPT(Q, teta):= ( block [rad, Q11, Q12, Q22, Q16, Q26, Q66, Qb],
+                  
+                      rad: teta*%pi/180,
+                      Q11 : Q[1,1]*cos(rad)**4 + 2*(Q[1,2] + 2*Q[3,3])*sin(rad)**2 * cos(rad)**2 + Q[2,2]*sin(rad)**4 ,
+                      Q12 : (Q[1,1] + Q[2,2] - 4*Q[3,3]) * sin(rad)**2 * cos(rad)**2 + Q[1,2]*(sin(rad)**4 + cos(rad)**4 ), 
+                      Q22 : Q[1,1]*sin(rad)**4 + 2*(Q[1,2] + 2*Q[3,3])*sin(rad)**2 * cos(rad)**2 + Q[2,2]*cos(rad)**4, 
+                      Q16 : (Q[1,1] - Q[1,2] - 2*Q[3,3])*sin(rad)*cos(rad)**3 + (Q[1,2]-Q[2,2] + 2*Q[3,3])*sin(rad)**3 * cos(rad), 
+                      Q26 : (Q[1,1] - Q[1,2] - 2*Q[3,3])*sin(rad)**3 *cos(rad) + (Q[1,2] - Q[2,2] + 2*Q[3,3])*sin(rad)*cos(rad)**3, 
+                      Q66 : (Q[1,1] + Q[2,2] - 2*Q[3,3])*sin(rad)**2 * cos(rad)**2 + Q[3,3]*(sin(rad)**4 + cos(rad)**4 ), 
+                      Qb: matrix(  [Q11, Q12, Q16], [Q12, Q22, Q26], [Q16, Q26, Q66] ),
+                      Qb
+ )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rotina que define um Q ortotropico, dados E1, E2, v12 e G12
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_ORTO(E1, E2, v12, G12):= ( block[Q11, Q12, Q22, Q66, Q],
+                     
+                    Q11:  E1**2 / (E1- E2*v12**2),
+                    Q12:  (v12*E1*E2) / (E1- E2*v12**2),
+                    Q22:  (E1*E2) / (E1- E2*v12**2),
+                    Q66:  G12,
+                    Q:    matrix(   [  Q11, Q12, 0 ] , [Q12, Q22, 0], [0, 0, Q66] ),
+                    Q
+)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos a um exemplo.... CRFP T300/5208
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+E1: 181E9 $
+E2: 10.36E9 $
+v12: 0.28 $
+G12: 7.17E9 $
+Q1: Q_ORTO(E1,E2,v12,G12);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Outro material.... AS/3501 - grafite-epoxy
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+E1: 140E9 $
+E2: 10E9 $
+v12: 0.3 $
+G12: 7E9 $
+Q2: Q_ORTO(E1,E2,v12,G12);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Agora vamos ao laminado.... Vamos definir o numero de camadas, a espessura total e uma lista com os angulos
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Nc: 4$
+h: [0.25E-4,0.25E-4, 0.25E-4, 0.25E-4] $
+ht: sum(h[i],i,1,Nc) $
+Q: [Q1, Q1, Q1, Q1] $
+t: [0,90,90,0] $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Agora vamos ao procedimento de integracao...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+z[i,j]:= 0.0$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+A: genmatrix(z, 3,3)$
+B: genmatrix(z, 3,3)$
+D: genmatrix(z, 3,3)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Loop
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+h_baixo : -ht/2 $
+for camada:1 thru Nc do (
+    QR:   ROT_EPT(Q[camada], t[camada]), 
+    h_cima: h_baixo + h[camada] ,
+    A: A + QR*(h_cima - h_baixo),
+    B: B + (1/2)*QR*( h_cima**2 - h_baixo**2), 
+    D: D + (1/3)*QR*( h_cima**3 - h_baixo**3),
+    h_baixo: h_cima
+);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+A: float(ratsimp(A)) ;
+B: float(ratsimp(B)) ;
+D: float(ratsimp(D)) ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Inversao das relacoes
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D_inv: invert( B.invert(A).B - D )$
+H_inv: D_inv.B.invert(A) $
+A_inv: invert(A)-invert(A).B.H_inv $
+B_inv: invert(A).B.D_inv $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vamos definir N e M....sempre /m
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+N: [0.0, 1.0, 0.0] $
+M: [1.0, 0.0, 0.0] $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E, com isto, calcular as deformacoes e curvaturas
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eps: A_inv.N + B_inv.M;
+k: D_inv.M - H_inv.N ;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E, portanto, tensoes e deformacoes em cada camada. Aqui temos que ter o cuidado especial com as orientações.
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+h_baixo : -ht/2 $
+for camada:1 thru Nc do (
+    zm: h_baixo +  h[camada]/2, 
+    /* Calcula a deformação no plano médio da camada 
+       Esta deformação está no sistema GLOBAL */
+    eps_zm: eps - zm*k, 
+    /* Rotaciona esta deformação para o sistema local da camada */
+    eps_zm_12: ROT_EPS(eps_zm, t[camada]),
+    /* Podemos calcular a tensão no sistema local */
+    sigma_12: Q[camada].eps_zm_12,
+    disp(sigma_12), 
+    h_baixo: h_baixo + h[camada]
+);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 23.05.1"$

@@ -1,0 +1,240 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 23.05.1 ] */
+/* [wxMaxima: comment start ]
+Relações Constitutivas I 
+12/05/2026
+Prof. Eduardo Lenz Cardoso - eduardo.cardoso@udesc.br
+Universidade do Estado de Santa Catarina - UDESC
+Centro de Ciencias Tecnologicas - CCT
+
+Criterio de Falha de Tsai-Wu
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+kill(all)$
+load(draw)$
+ratprint: false $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Equacao Geral do Criterio de Falha Quadratico no espaco das tensoes
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+falha_quadratico: F_1*s1 + F_2*s2 + 2*F_12*s1*s2 + F_11*s1**2 + F_22*s2**2 + F_66*s3**2 = 1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Ensaio Uniaxal em 1 (direcao X local)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq1: ev(falha_quadratico,[s1=X,   s2=0, s3=0]);
+eq2: ev(falha_quadratico,[s1=-Xc, s2=0, s3=0]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Ensaio Uniaxial em 2 (direcao Y local)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq3: ev(falha_quadratico,[s1=0, s2=Y,   s3=0]);
+eq4: ev(falha_quadratico,[s1=0, s2=-Yc, s3=0]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Ensaio de Cisalhamento
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq5: ev(falha_quadratico,[s1=0, s2=0, s3=S]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Assim, 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+termos_1: solve([eq1,eq2],[F_1,F_11]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+termos_2: solve([eq3,eq4],[F_2,F_22]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+termos_3: solve([eq5],[F_66]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Finalmente, conforme proposto por Tsai, podemos escrever o termo de acoplamento como 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+F12_Tsai: F_12 = ev(F_12a*sqrt(F_11*F_22),[termos_1,termos_2]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+#################################################
+####                      CRITERIO DE TSAI-WU                               ####
+#################################################
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Tsai_Wu: ev(falha_quadratico,[termos_1, termos_2, termos_3, F12_Tsai]);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Como visualizar esta equacao ? Montamos 3 vistas:
+
+1) Plano 6 - 2 (cisalhamento - Y)
+2) Plano 1 - 2 (X- Y)
+3) Plano 1 - 6 (X - cisalhamento)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+plano_62: ev(Tsai_Wu,s1=0);
+plano_12: ev(Tsai_Wu,s3=0);
+plano_16: ev(Tsai_Wu,s2=0);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+e, como exemplo, utilizar os seguintes dados experimentais (Em MPa)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+experimental: [X = 1062, Xc = 610, Y = 31, Yc = 118, S = 72, F_12a =  -0.5];
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Agora vamos ao show .. disciplina  Plot1001....
+
+1) Substituimos os dados experimentais nas equacoes dos planos...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq62: ev(plano_62, experimental);
+eq12: ev(plano_12, experimental);
+eq16: ev(plano_16, experimental);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Agora definimos os comandos graficos para cada um dos planos....
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+p62: gr2d(      grid       = true,
+                line_type  = solid,
+                color      = red ,     
+                key        = "Plano 12",
+                xlabel     = "S12",
+                ylabel     = "S22",
+                implicit(eq62 , s3, -100, 100, s2, -150, 150)
+ )$
+
+p12: gr2d(      grid       = true,
+                line_type  = solid,
+                color      = red ,     
+                key        = "Plano 12",
+                xlabel     = "S11",
+                ylabel     = "S22",
+                implicit(eq12 , s1, -2000, 2000, s2, -150, 150)
+ )$
+
+p16: gr2d(      grid       = true,
+                line_type  = solid,
+                color      = red ,     
+                key        = "Plano 16",
+                xlabel     = "S11",
+                ylabel     = "S12",
+                implicit(eq16 , s1, -2000, 2000, s3, -100, 100)
+ )$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Agora plotamos na forma mostrada em aula...
+
+Para plotar para um arquivo, podemos adicionar as seguintes linhas dentro do draw
+
+terminal   = png,
+pic_width  = 800,
+pic_height = 600,
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxdraw(
+     columns    = 2,
+     p62, p12, p16)$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+sxx = 500 / 500
+syy = -50 / 50
+sxy = 50 / 50
+
+
+
+#################################################
+###                             RESISTENCIA                               ####
+#################################################
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eqR: ev(Tsai_Wu,[s1=R*s1r, s2=R*s2r, s3=R*s3r])=1;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Soluciona para R, considerando os dados experimentais
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Rs: float(solve( ev(eqR,experimental),R));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+E podemos verificar pelos graficos .. so vale o positivo...
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+float(ev(Rs, [s1r = 500, 
+                    s2r = -100,
+                    s3r = 100]));
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 23.05.1"$
