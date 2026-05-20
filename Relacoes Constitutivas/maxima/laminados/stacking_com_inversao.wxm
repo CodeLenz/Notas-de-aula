@@ -1,5 +1,5 @@
 /* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
-/* [ Created with wxMaxima version 23.05.1 ] */
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
 /* [wxMaxima: input   start ] */
 kill(all) $
 ratprint: false $
@@ -24,6 +24,8 @@ Determinacao das matrizes de acoplamento em placas laminadas
 Rotina para rotacao da deformacao. O tensor sera recebido na forma compacta, expandido e entao rotacinado.
 Para a saida, o tensor eh novamente colocado na forma compacta. Devemos ter um cuidado especial com o termo cisalhante da 
 deformacao
+Recebe um vetor na notação de Voigt com exx, eyy, gamma_xy
+e devolve um vetor rotacionado de Voigt
    [wxMaxima: comment end   ] */
 
 
@@ -224,4 +226,4 @@ for camada:1 thru Nc do (
 
 
 /* Old versions of Maxima abort on loading files that end in a comment. */
-"Created with wxMaxima 23.05.1"$
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$
