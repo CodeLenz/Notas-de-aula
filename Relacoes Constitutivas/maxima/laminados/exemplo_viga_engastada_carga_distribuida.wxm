@@ -1,0 +1,419 @@
+/* [wxMaxima batch file version 1] [ DO NOT EDIT BY HAND! ]*/
+/* [ Created with wxMaxima version 26.01.0-DevelopmentSnapshot ] */
+/* [wxMaxima: input   start ] */
+kill(all) $
+ratprint: false $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: title   start ]
+Viga laminada engastada sob carga distribuída constante
+Exemplo das notas de aula (Cap 12)
+   [wxMaxima: title   end   ] */
+
+
+/* [wxMaxima: section start ]
+1. Sub-rotinas
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rotação do vetor de deformação (forma compacta: gamma = 2*eps_12).
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ROT_EPS(T, teta) := block([T2, R, c, s, rad, defo],
+    rad : teta*%pi/180,
+    c   : cos(rad),
+    s   : sin(rad),
+    R   : matrix([ c, s, 0],
+                 [-s, c, 0],
+                 [ 0, 0, 1]),
+    T2  : matrix([T[1,1],   T[3,1]/2, 0],
+                 [T[3,1]/2, T[2,1],   0],
+                 [0,        0,        0]),
+    defo: R . T2 . transpose(R),
+    [defo[1,1], defo[2,2], 2*defo[1,2]]
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rotação da matriz Q reduzida (EPT).
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+ROT_EPT(Q, teta) := block([rad, c, s, Q11, Q12, Q22, Q16, Q26, Q66, Qb],
+    rad: teta*%pi/180,
+    c  : cos(rad),
+    s  : sin(rad),
+    Q11: Q[1,1]*c^4 + 2*(Q[1,2] + 2*Q[3,3])*s^2*c^2 + Q[2,2]*s^4,
+    Q12: (Q[1,1] + Q[2,2] - 4*Q[3,3])*s^2*c^2 + Q[1,2]*(s^4 + c^4),
+    Q22: Q[1,1]*s^4 + 2*(Q[1,2] + 2*Q[3,3])*s^2*c^2 + Q[2,2]*c^4,
+    Q16: (Q[1,1] - Q[1,2] - 2*Q[3,3])*s*c^3
+         + (Q[1,2] - Q[2,2] + 2*Q[3,3])*s^3*c,
+    Q26: (Q[1,1] - Q[1,2] - 2*Q[3,3])*s^3*c
+         + (Q[1,2] - Q[2,2] + 2*Q[3,3])*s*c^3,
+    Q66: (Q[1,1] + Q[2,2] - 2*Q[3,3])*s^2*c^2 + Q[3,3]*(s^4 + c^4),
+    Qb : matrix([Q11, Q12, Q16],
+                [Q12, Q22, Q26],
+                [Q16, Q26, Q66]),
+    Qb
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Q ortotrópica reduzida, na forma clássica:
+  Q11 = E1/(1-v12*v21),  v21 = v12*E2/E1
+  Q22 = E2/(1-v12*v21)
+  Q12 = v12*E2/(1-v12*v21)
+  Q66 = G12
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Q_ORTO(E1, E2, v12, G12) := block([v21, den, Q11, Q12, Q22, Q66],
+    v21: v12*E2/E1,
+    den: 1 - v12*v21,
+    Q11: E1/den,
+    Q12: v12*E2/den,
+    Q22: E2/den,
+    Q66: G12,
+    matrix([Q11, Q12, 0],
+           [Q12, Q22, 0],
+           [0,   0,   Q66])
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Polinômio de Tsai-Wu.
+  F1  = 1/X  - 1/Xc       (linear)
+  F2  = 1/Y  - 1/Yc       (linear)
+  F11 = 1/(X*Xc)          (quadrático)
+  F22 = 1/(Y*Yc)          (quadrático)
+  F66 = 1/S^2
+  F12 = F12_a*sqrt(F11*F22)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Tsai_Wu(s, experimental) := block(
+    [F1, F2, F11, F22, F12, F66, X, Xc, Y, Yc, S, F12_a, poli],
+    F1 : 1/X  - 1/Xc,
+    F2 : 1/Y  - 1/Yc,
+    F11: 1/(X*Xc),
+    F22: 1/(Y*Yc),
+    F66: 1/S^2,
+    F12: F12_a*sqrt(F11*F22),
+    poli: F1*s[1,1] + F2*s[2,1]
+          + F11*s[1,1]^2 + F22*s[2,1]^2
+          + 2*F12*s[1,1]*s[2,1] + F66*s[3,1]^2,
+    ev(poli, experimental)
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+2. Material e laminado
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Vidro/epóxi, propriedades diretas (mesmo material do exemplo de placa).
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+E1 : 38.6e9 $
+E2 :  8.27e9 $
+v12: 0.26    $
+G12:  4.14e9 $
+Q1 : Q_ORTO(E1, E2, v12, G12);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Laminado simétrico cruzado [0/90]_s com 4 lâminas iguais.
+Cada lâmina tem espessura h/4 = 5 mm; espessura total h = 20 mm.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+Nc: 4 $
+h : [5e-3, 5e-3, 5e-3, 5e-3] $
+ht: sum(h[i], i, 1, Nc);
+Q : [Q1, Q1, Q1, Q1] $
+t : [0, 90, 90, 0] $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Dados de resistência da lâmina (Pa). 
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+f_1: [X = 1062e6, Xc = 610e6, Y = 31e6, Yc = 118e6, S = 72e6, F12_a = 0.0];
+falha: [f_1, f_1, f_1, f_1] $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+3. Geometria da viga e carregamento
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Viga engastada em x=0, livre em x=L, largura b constante, carga
+distribuída q transversal uniforme. M(x) = q*(L-x)^2/2 (parabólico),
+máximo no engaste.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+b     : 25e-3 $    /* largura  [m] */
+L     : 1.0   $    /* comprimento [m] */
+q_dist: 100   $    /* carga distribuída [N/m] */
+
+V_max  : q_dist * L;            /* cortante no engaste */
+M_max  : q_dist * L^2 / 2;      /* momento no engaste [N.m] */
+M_x_max: M_max / b;             /* momento por unidade de largura [N] */
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+4. Montagem das matrizes A, B, D
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Integração discreta camada a camada. DD para evitar conflito com 'D'
+reservado em alguns pacotes do Maxima.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+zero[i, j] := 0.0 $
+A : genmatrix(zero, 3, 3) $
+B : genmatrix(zero, 3, 3) $
+DD: genmatrix(zero, 3, 3) $
+
+h_baixo: -ht/2 $
+for camada: 1 thru Nc do (
+    QR    : ROT_EPT(Q[camada], t[camada]),
+    h_cima: h_baixo + h[camada],
+    A : A  +       QR*(h_cima   - h_baixo  ),
+    B : B  + (1/2)*QR*(h_cima^2 - h_baixo^2),
+    DD: DD + (1/3)*QR*(h_cima^3 - h_baixo^3),
+    h_baixo: h_cima
+) $
+
+A : float(ratsimp(A));
+B : float(ratsimp(B));
+DD: float(ratsimp(DD));
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Verificação esperada (capítulo):
+  A_11 = h*23779.4e6 = 4.756e8 N/m
+  D_11 = h^3*2943.35e6 = 23.55 kN.m
+  D_22 = h^3*1019.8e6  =  8.16 kN.m
+  D_12 = h^3*181.81e6  =  1.45 kN.m
+  D_66 = h^3*345e6     =  2.76 kN.m
+  B = 0 (laminado simétrico)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: section start ]
+5. Inversão da relação constitutiva
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: input   start ] */
+D_inv: invert(B . invert(A) . B - DD);   
+H_inv: D_inv . B . invert(A) $
+A_inv: invert(A) - invert(A) . B . H_inv$
+B_inv: invert(A) . B . D_inv $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Rigidez efetiva à flexão (tira estreita), por unidade de largura:
+  1/d_11 = D_11 - D_12^2 / D_22
+e a rigidez total da viga (EI)_ef = b/d_11.
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+inv_d11: DD[1,1] - DD[1,2]^2 / DD[2,2];
+EI_ef  : b * inv_d11;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+6. Curvatura e tensões na seção crítica (engaste)
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Aplica M = {M_x_max, 0, 0}^T (momento máximo no engaste, por unidade
+de largura) e obtém a curvatura pelo sistema invertido.
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+M: matrix([M_x_max], [0.0], [0.0]);
+k: D_inv . M;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Recuperação de tensões: avaliada na COTA EXTERNA de cada lâmina, isto
+é, na face mais distante do plano médio (z = 0), onde a deformação
+linear ε = -z*κ tem maior magnitude DENTRO de cada lâmina. Para o
+laminado [0/90]_s, isso corresponde a:
+   camada 1 (0°, fundo):  z_out = -h/2  = -10 mm
+   camada 2 (90°, fundo): z_out = -h/4  =  -5 mm
+   camada 3 (90°, topo):  z_out = +h/4  =  +5 mm
+   camada 4 (0°, topo):   z_out = +h/2  = +10 mm
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+zero[i,j] := 0.0:= 0.0 $
+s_camada: genmatrix(zero2, Nc, 1) $
+z_camada: makelist(0.0, Nc) $
+
+h_baixo: -ht/2 $
+for camada: 1 thru Nc do (
+    h_cima: h_baixo + h[camada],
+    /* cota externa: face de maior |z| dentro da lâmina */
+    z_out: if abs(h_baixo) > abs(h_cima) then h_baixo else h_cima,
+    z_camada[camada]: z_out,
+    eps_z       : -z_out * k,
+    eps_z_local : ROT_EPS(eps_z, t[camada]),
+    sigma_local : Q[camada] . eps_z_local,
+    s_camada[camada, 1]: sigma_local,
+    h_baixo: h_cima
+) $
+
+/* Tensões em cada lâmina, na cota externa, em MPa */
+s_camada / 1e6;
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Valores esperados (capítulo):
+  camada 1 (0°, z=-h/2): σ_11=-33,3, σ_22=-0,59, σ_12=0 MPa (compressão)
+  camada 2 (90°, z=-h/4): σ_11=+2,06, σ_22=-3,44, σ_12=0 MPa (matriz em compressão)
+  camada 3 (90°, z=+h/4): σ_11=-2,06, σ_22=+3,44, σ_12=0 MPa (matriz em tração) <- crítica
+  camada 4 (0°, z=+h/2): σ_11=+33,3, σ_22=+0,59, σ_12=0 MPa (tração)
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: section start ]
+7. Avaliação do critério de Tsai-Wu em cada lâmina
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for camada: 1 thru Nc do (
+    eq: Tsai_Wu(s_camada[camada, 1], falha[camada]),
+    disp(["camada", camada, "  theta =", t[camada], "  z =", float(z_camada[camada]*1000), "mm",
+          "  TW =", float(eq)])
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: section start ]
+8. Carregamento limite (fator R+ por lâmina)
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Para cada lâmina, substitui σ → R*σ no polinômio e resolve a equação
+quadrática a*R^2 + b*R - 1 = 0. A menor raiz positiva R+ entre todas
+as lâminas é o fator multiplicativo crítico da carga q. Para nosso
+problema esperamos a lâmina 3 (90° em z=+h/4, transversal em tração)
+como crítica, com R+ ≈ 8,93.
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+for camada: 1 thru Nc do (
+    eq_R: Tsai_Wu(R * s_camada[camada, 1], falha[camada]),
+    sols: float(solve(eq_R = 1, R)),
+    disp(["camada", camada, "  theta =", t[camada], "  z =",
+          float(z_camada[camada]*1000), "mm  R =", sols])
+) $
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: comment start ]
+Carregamento último: q_max = R+_min * q_dist. Para nosso caso:
+  R+_min ≈ 8,93  →  q_max ≈ 893 N/m
+
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: section start ]
+9. Linha elástica
+   [wxMaxima: section end   ] */
+
+
+/* [wxMaxima: comment start ]
+Equação de Euler-Bernoulli para viga laminada, 
+(M = -(EI)_ef * w''), com o momento M(x) = q*(L-x)^2/2 parabólico:
+  (EI)_ef * w''(x) = -q*(L-x)^2/2
+Condições de engaste em x=0:  w(0) = 0  e  w'(0) = 0.
+
+   [wxMaxima: comment end   ] */
+
+
+/* [wxMaxima: input   start ] */
+eq_linha   : EI_ef * 'diff(w, x, 2) = -q_dist * (L - x)^2 / 2;
+sol_geral  : ode2(eq_linha, w, x);
+theta_w    : diff(rhs(sol_geral), x);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+/* condições no engaste */
+cc1: ev(rhs(sol_geral), x = 0) = 0;
+cc2: ev(theta_w,        x = 0) = 0;
+cts: solve([cc1, cc2]);
+
+linha_elastica: ev(sol_geral, cts);
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+/* flecha na extremidade */
+flecha_ponta : float(ev(rhs(linha_elastica), x = L));
+delta_formula: float(q_dist * L^4 / (8 * EI_ef));
+
+disp(["flecha numérica w(L) [mm] =", flecha_ponta * 1000])$
+disp(["|flecha| [mm]             =", abs(flecha_ponta) * 1000])$
+disp(["fórmula qL^4/(8 EI_ef) [mm] =", delta_formula * 1000])$
+disp(["razão |flecha|/L [%]      =", abs(flecha_ponta)/L * 100])$
+/* [wxMaxima: input   end   ] */
+
+
+/* [wxMaxima: input   start ] */
+wxplot2d(rhs(linha_elastica), [x, 0, L]);
+/* [wxMaxima: input   end   ] */
+
+
+
+/* Old versions of Maxima abort on loading files that end in a comment. */
+"Created with wxMaxima 26.01.0-DevelopmentSnapshot"$
